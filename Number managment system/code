@@ -1,0 +1,49 @@
+const fetch = require('isomorphic-fetch');
+
+async function fetchURL(url) {
+    try {
+        const response = await fetch(url);
+        if (response.ok) {
+            const data = await response.json();
+            return data;
+        }
+    } catch (error) {
+  
+    }
+    return null;
+}
+
+async function fetchAndSortResponses(urls) {
+    const sortedNumbersSet = new Set();
+
+    for (const url of urls) {
+        const startTime = Date.now();
+        const data = await fetchURL(url);
+        const elapsedTime = Date.now() - startTime;
+
+        if (elapsedTime <= 500 && data !== null) {
+            const validNumbers = data.numbers.filter(number => Number.isInteger(number));
+            validNumbers.forEach(number => sortedNumbersSet.add(number));
+        }
+    }
+    
+    const sortedNumbersArray = [...sortedNumbersSet].sort((a, b) => a - b);
+    return sortedNumbersArray;
+}
+
+const urls = [
+    'http://20.244.56.144/numbers/primes',
+    'http://20.244.56.144/numbers/fibo',
+    'http://20.244.56.144/numbers/odd',
+    'http://20.244.56.144/numbers/rand'
+];
+
+(async () => {
+    const sortedNumbersArray = await fetchAndSortResponses(urls);
+
+    if (sortedNumbersArray.length > 0) {
+        console.log('Sorted Numbers:', sortedNumbersArray);
+    } else {
+        console.log('No valid numbers found.');
+    }
+})();
